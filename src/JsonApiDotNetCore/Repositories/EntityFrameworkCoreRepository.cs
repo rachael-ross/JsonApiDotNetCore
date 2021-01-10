@@ -179,7 +179,28 @@ namespace JsonApiDotNetCore.Repositories
                 attribute.SetValue(resourceFromDatabase, attribute.GetValue(resourceFromRequest));
             }
 
+            RestoreConcurrencyToken(resourceFromRequest, resourceFromDatabase);
+
             await SaveChangesAsync(cancellationToken);
+        }
+
+        private void RestoreConcurrencyToken(TResource resourceFromRequest, TResource resourceFromDatabase)
+        {
+            foreach (var propertyEntry in _dbContext.Entry(resourceFromDatabase).Properties)
+            {
+                if (propertyEntry.Metadata.IsConcurrencyToken)
+                {
+                    // Overwrite the ConcurrencyToken coming from database with the one from the request body.
+                    // If they are different, EF Core throws a DbUpdateConcurrencyException on save.
+
+                    var concurrencyTokenProperty = typeof(TResource).GetProperty(propertyEntry.Metadata.PropertyInfo.Name);
+                    if (concurrencyTokenProperty != null)
+                    {
+                        var concurrencyTokenFromRequest = concurrencyTokenProperty.GetValue(resourceFromRequest);
+                        propertyEntry.OriginalValue = concurrencyTokenFromRequest;
+                    }
+                }
+            }
         }
 
         protected void AssertIsNotClearingRequiredRelationship(RelationshipAttribute relationship, TResource leftResource, object rightValue)
@@ -396,6 +417,10 @@ namespace JsonApiDotNetCore.Repositories
             try
             {
                 await _dbContext.SaveChangesAsync(cancellationToken);
+            }
+            catch (DbUpdateConcurrencyException exception)
+            {
+                throw new DataConcurrencyException(exception);
             }
             catch (DbUpdateException exception)
             {
