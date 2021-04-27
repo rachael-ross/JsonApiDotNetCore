@@ -83,6 +83,9 @@ namespace JsonApiDotNetCore.Configuration
         public IsolationLevel? TransactionIsolationLevel { get; set; }
 
         /// <inheritdoc />
+        public bool EnableDefaultSortById { get; set; } = true;
+
+        /// <inheritdoc />
         public JsonSerializerSettings SerializerSettings { get; } = new JsonSerializerSettings
         {
             ContractResolver = new DefaultContractResolver
