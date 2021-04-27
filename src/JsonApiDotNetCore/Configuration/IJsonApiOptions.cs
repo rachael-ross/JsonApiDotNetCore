@@ -176,5 +176,10 @@ namespace JsonApiDotNetCore.Configuration
         /// </example>
         /// </summary>
         JsonSerializerSettings SerializerSettings { get; }
+
+        /// <summary>
+        /// If true, will automatically sort resources by Id, if no other sort was specified. Default is true.
+        /// </summary>
+        bool EnableDefaultSortById { get; set; }
     }
 }
