@@ -86,6 +86,9 @@ namespace JsonApiDotNetCore.Configuration
         public bool EnableDefaultSortById { get; set; } = true;
 
         /// <inheritdoc />
+        public bool AlwaysReturnResourceOnCreateUpdate { get; set; } = false;
+
+        /// <inheritdoc />
         public JsonSerializerSettings SerializerSettings { get; } = new JsonSerializerSettings
         {
             ContractResolver = new DefaultContractResolver
